@@ -11,7 +11,7 @@ type EnPkg struct {
 	No       bytes.Entity //表地址,传入正序
 	Control  Control      //控制码,枚举
 	Password bytes.Entity //密码,可选
-	Mark     bytes.Entity //标识符,枚举
+	Mark     Mark         //标识符,枚举
 	Data     bytes.Entity //数据域
 }
 

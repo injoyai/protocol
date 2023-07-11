@@ -7,19 +7,7 @@ import (
 // Mark
 // 第三字节是序号(例如0是总,1对应1通道),
 // 第四字节是天数(例如:1是上一日)
-type Mark bytes.Entity
-
-func (this Mark) String() string {
-	return this.HEX()
-}
-
-func (this Mark) HEX() string {
-	return bytes.Entity(this).HEX()
-}
-
-func (this Mark) ReverseAdd0x33() Mark {
-	return Mark(bytes.Entity(this).Reverse().Add0x33())
-}
+type Mark = bytes.Entity
 
 var (
 	MarkSetReset     Mark = []byte{0x12, 0x34, 0x56, 0x01}                                                 //电表清零

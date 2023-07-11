@@ -13,7 +13,7 @@ func TestDecode(t *testing.T) {
 		return
 	}
 	t.Log(pkg.Data.Sub0x33())
-	f, err := pkg.Data.Sub0x33ReverseHexToFloat64(2)
+	f, err := pkg.Data.Sub0x33ReverseHEXToFloat64(2)
 	if err != nil {
 		t.Error(err)
 		return
@@ -37,5 +37,5 @@ func TestEncode(t *testing.T) {
 	t.Log(p2.No)
 	t.Log(p2.Control)
 	t.Log(p2.Mark.HEX())
-	t.Log(p2.Data.Sub0x33ReverseHexToInt())
+	t.Log(p2.Data.Sub0x33ReverseHEXToInt())
 }
