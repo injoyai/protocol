@@ -3,7 +3,9 @@ package s7
 import (
 	"encoding/hex"
 	"errors"
+	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
+	"protocol"
 
 	"strconv"
 )
@@ -84,24 +86,30 @@ func (this Write) len() int {
 	return len(this.Value) + 4
 }
 
-type Pkg struct {
+var _ protocol.Interface = new(Request)
+
+type Request struct {
 	MsgID uint16 //消息id
 	Param Param  //参数
 	Write Write  //写入数据
 }
 
-func (this *Pkg) SetMsgID(msgID uint16) *Pkg {
+func (this *Request) Encode() g.Bytes {
+	return this.Bytes()
+}
+
+func (this *Request) SetMsgID(msgID uint16) *Request {
 	this.MsgID = msgID
 	return this
 }
 
-func (this *Pkg) len() int {
+func (this *Request) len() int {
 	return 17 + this.Param.len() + this.Write.len()
 }
 
-// Encode
+// Bytes
 // 03 00 00 16 11 E0 00 00 00 01 00 C1 02 10 00 C2 02 03 00 C0 01 0A
-func (this *Pkg) Encode() []byte {
+func (this *Request) Bytes() g.Bytes {
 	data := []byte{0x03, 0x00}                                          //报文头,2字节
 	data = append(data, conv.Bytes(uint16(this.len()))...)              //报文长度2字节
 	data = append(data, []byte{0x02, 0xF0, 0x80}...)                    //固定协议标识,3字节
@@ -116,11 +124,11 @@ func (this *Pkg) Encode() []byte {
 	return data
 }
 
-func (this *Pkg) HEX() string {
+func (this *Request) HEX() string {
 	return hex.EncodeToString(this.Encode())
 }
 
-type DePkg struct {
+type Response struct {
 	MsgID     uint16    //消息id
 	OrderType OrderType //指令类型
 	DataType  DataType  //数据类型
@@ -129,7 +137,7 @@ type DePkg struct {
 	Size      int       //读取的长度
 }
 
-func Decode(bs []byte) (*DePkg, error) {
+func Decode(bs []byte) (*Response, error) {
 	if len(bs) < 17 {
 		return nil, errors.New("数据长度小于17" + hex.EncodeToString(bs))
 	}
@@ -137,7 +145,7 @@ func Decode(bs []byte) (*DePkg, error) {
 	if len(bs) != length {
 		return nil, errors.New("数据长度错误:" + hex.EncodeToString(bs))
 	}
-	p := new(DePkg)
+	p := new(Response)
 	p.MsgID = conv.Uint16(bs[11:13])
 
 	lenData := conv.Int(bs[13:15])

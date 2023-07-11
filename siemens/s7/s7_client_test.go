@@ -38,7 +38,7 @@ func TestReadDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetInt(v.(*DePkg).Value))
+					logs.Debug(GetInt(v.(*Response).Value))
 				}
 			}
 
@@ -50,7 +50,7 @@ func TestReadDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetBool(v.(*DePkg).Value, 0))
+					logs.Debug(GetBool(v.(*Response).Value, 0))
 				}
 			}
 
@@ -62,7 +62,7 @@ func TestReadDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetInt(v.(*DePkg).Value))
+					logs.Debug(GetInt(v.(*Response).Value))
 				}
 			}
 
@@ -74,7 +74,7 @@ func TestReadDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 
@@ -114,7 +114,7 @@ func TestWriteDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 
@@ -126,7 +126,7 @@ func TestWriteDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 
@@ -138,7 +138,7 @@ func TestWriteDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 
@@ -150,7 +150,7 @@ func TestWriteDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 
@@ -162,7 +162,7 @@ func TestWriteDB(t *testing.T) {
 				if err != nil {
 					t.Error(err)
 				} else {
-					logs.Debug(GetFloat(v.(*DePkg).Value))
+					logs.Debug(GetFloat(v.(*Response).Value))
 				}
 			}
 

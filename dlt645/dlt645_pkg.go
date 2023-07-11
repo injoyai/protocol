@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"github.com/injoyai/base/bytes"
+	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
 )
 
@@ -19,7 +20,7 @@ func (this EnPkg) HEX() string {
 	return hex.EncodeToString(this.Bytes())
 }
 
-func (this *EnPkg) Bytes() []byte {
+func (this *EnPkg) Bytes() g.Bytes {
 	bs := []byte{0x68}                                                //起始帧
 	bs = append(bs, this.No.Reverse()...)                             //表地址
 	bs = append(bs, byte(0x68))                                       //中间帧

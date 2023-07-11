@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/injoyai/base/bytes"
+	"github.com/injoyai/base/g"
 )
 
 /*
@@ -99,7 +100,7 @@ Bytes
 读取软元件D7000开始的连续5个软元件的值，其中0C是上一次写入的数
 50 00 00 FF FF 03 00 0C 00 10 00 01 04 00 00 58 1B 00 A8 05 00
 */
-func (this *Pkg) Bytes() bytes.Entity {
+func (this *Pkg) Bytes() g.Bytes {
 	data := []byte(nil)
 	data = append(data, pkgReqStart...)         //帧头
 	data = append(data, 0x00)                   //网络编号

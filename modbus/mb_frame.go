@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/injoyai/base/g"
 )
 
 type Frame interface {
@@ -15,7 +16,7 @@ type Frame interface {
 	Copy() Frame
 
 	// Bytes 根据当前数据,(实时)编码成字节
-	Bytes() []byte
+	Bytes() g.Bytes
 
 	// GetSlave 获取从站地址
 	GetSlave() byte
@@ -59,7 +60,7 @@ func (this *RTUFrame) HEX() string {
 	return hex.EncodeToString(this.Bytes())
 }
 
-func (this *RTUFrame) Bytes() []byte {
+func (this *RTUFrame) Bytes() g.Bytes {
 	bytes := []byte(nil)
 	bytes = append(bytes, this.Slave, this.Control.Byte())
 	bytes = append(bytes, this.Data...)
@@ -143,7 +144,7 @@ func (this *TCPFrame) HEX() string {
 	return hex.EncodeToString(this.Bytes())
 }
 
-func (this *TCPFrame) Bytes() []byte {
+func (this *TCPFrame) Bytes() g.Bytes {
 	bytes := []byte(nil)
 	bytes = append(bytes, this.Order[0], this.Order[1])
 	bytes = append(bytes, this.Protocol[0], this.Protocol[1])

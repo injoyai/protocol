@@ -25,68 +25,68 @@ func WriteCPUStop() []byte {
 }
 
 // ReadCPUStatus 读取CPU状态
-func ReadCPUStatus() *Pkg {
+func ReadCPUStatus() *Request {
 	return NewRead(0x000f18, 1, Byte, CPU)
 }
 
 // ReadMBit 读取M区位
-func ReadMBit(addr uint32) *Pkg {
+func ReadMBit(addr uint32) *Request {
 	return NewRead(addr, 1, Bit, Marker)
 }
 
 // ReadMByte 读取M区字节
-func ReadMByte(addr uint32, size uint16) *Pkg {
+func ReadMByte(addr uint32, size uint16) *Request {
 	return NewRead(addr, size, Byte, Marker)
 }
 
 // ReadIByte 读取输入字节
-func ReadIByte(addr uint32, size uint16) *Pkg {
+func ReadIByte(addr uint32, size uint16) *Request {
 	return NewRead(addr, size, Byte, Input)
 }
 
 // ReadDBBit 读取DB位
-func ReadDBBit(addr uint32) *Pkg {
+func ReadDBBit(addr uint32) *Request {
 	return NewRead(addr, 1, Byte, DataBlock)
 }
 
 // ReadDBByte 读DB字节
-func ReadDBByte(addr uint32, size uint16) *Pkg {
+func ReadDBByte(addr uint32, size uint16) *Request {
 	return NewRead(addr, size, Byte, DataBlock)
 }
 
 // WriteMBit 写M位
-func WriteMBit(addr uint32, value []byte) *Pkg {
+func WriteMBit(addr uint32, value []byte) *Request {
 	return NewWrite(addr, value, Bit, Marker)
 }
 
 // WriteMByte 写M字节
-func WriteMByte(addr uint32, value []byte) *Pkg {
+func WriteMByte(addr uint32, value []byte) *Request {
 	return NewWrite(addr, value, Byte, Marker)
 }
 
 // WriteIBit 写I位
-func WriteIBit(addr uint32, value []byte) *Pkg {
+func WriteIBit(addr uint32, value []byte) *Request {
 	return NewWrite(addr, value, Bit, Input)
 }
 
 // WriteIByte 写I字节
-func WriteIByte(addr uint32, value []byte) *Pkg {
+func WriteIByte(addr uint32, value []byte) *Request {
 	return NewWrite(addr, value, Byte, Input)
 }
 
 // WriteDBBit 写DB位
-func WriteDBBit(addr uint32, value bool) *Pkg {
+func WriteDBBit(addr uint32, value bool) *Request {
 	return NewWrite(addr, []byte{conv.SelectUint8(value, 1, 0)}, Byte, DataBlock)
 }
 
 // WriteDBByte 写DB字节
-func WriteDBByte(addr uint32, value []byte) *Pkg {
+func WriteDBByte(addr uint32, value []byte) *Request {
 	return NewWrite(addr, value, Byte, DataBlock)
 }
 
 // NewRead 读数据
-func NewRead(addr uint32, size uint16, dataType DataType, block Block) *Pkg {
-	return &Pkg{
+func NewRead(addr uint32, size uint16, dataType DataType, block Block) *Request {
+	return &Request{
 		MsgID: uint16(r.Uint32()),
 		Param: Param{
 			OrderType: ReadVar,
@@ -101,8 +101,8 @@ func NewRead(addr uint32, size uint16, dataType DataType, block Block) *Pkg {
 }
 
 // NewWrite 写数据
-func NewWrite(addr uint32, value []byte, dataType DataType, block Block) *Pkg {
-	return &Pkg{
+func NewWrite(addr uint32, value []byte, dataType DataType, block Block) *Request {
+	return &Request{
 		MsgID: uint16(r.Uint32()),
 		Param: Param{
 			OrderType: WriteVar,
