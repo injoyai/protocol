@@ -13,7 +13,7 @@ func TestControl_Byte(t *testing.T) {
 }
 
 func TestMark(t *testing.T) {
-	t.Log(MarkSetSwitchOff.ReverseAdd0x33().HEX())
+	t.Log(MarkSetSwitchOff.Reverse().Add0x33().HEX())
 	t.Log(Control(conv.BINStr(byte(0x1c))[3:8]).String())
 
 }
