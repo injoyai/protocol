@@ -36,13 +36,30 @@ func NewZHTotal(slave uint16) g.Bytes {
 			Reason: ReasonStart,
 			Info: []Info{
 				{
-					Addr: [3]byte{},
+					Addr: 0,
 					QOI:  0x14,
 				},
 			},
 		},
 	}).Bytes()
 }
+
+//func NewRead(slave uint16, addr uint32) g.Bytes {
+//	return (&APDU{
+//		APCI: APCI{},
+//		ASDU: ASDU{
+//			Type:   TypeRead,
+//			Slave:  slave,
+//			Reason: ReasonAsk,
+//			Info: []Info{
+//				{
+//					Addr: addr,
+//					//QOI:  0x14,
+//				},
+//			},
+//		},
+//	}).Bytes()
+//}
 
 // NewSTARTDT_C 启动 U帧
 func NewSTARTDT_C() g.Bytes {
@@ -155,26 +172,27 @@ func (this ASDU) Bytes() g.Bytes {
 
 // Info 信息对象
 type Info struct {
-	Addr [3]byte   //信息对象地址, 操作地址
-	QOI  byte      //信息元素集, 操作类型
-	Time time.Time //信息对象时标(可选)
+	Addr uint32 //信息对象地址, 操作地址 3字节
+	QOI  byte   //信息元素集, 操作类型
+	//Time time.Time //信息对象时标(可选)
 }
 
 func (this Info) Bytes() g.Bytes {
-	data := append(this.Addr[:], this.QOI)
-	if !this.Time.IsZero() {
-		//60*1000=60000 < 65535
-		mill := this.Time.Second()*1000 + int(this.Time.UnixNano()/1e6)%1000
-		data = append(data,
-			byte(mill),
-			byte(mill/256),
-			byte(this.Time.Minute()),
-			byte(this.Time.Hour()),
-			byte(this.Time.Day()),
-			byte(this.Time.Month()),
-			byte(this.Time.Year()-2000),
-		)
-	}
+	data := []byte{byte(this.Addr), byte(this.Addr >> 8), byte(this.Addr >> 16)}
+	data = append(data, this.QOI)
+	//if !this.Time.IsZero() {
+	//	//60*1000=60000 < 65535
+	//	mill := this.Time.Second()*1000 + int(this.Time.UnixNano()/1e6)%1000
+	//	data = append(data,
+	//		byte(mill),
+	//		byte(mill/256),
+	//		byte(this.Time.Minute()),
+	//		byte(this.Time.Hour()),
+	//		byte(this.Time.Day()),
+	//		byte(this.Time.Month()),
+	//		byte(this.Time.Year()-2000),
+	//	)
+	//}
 	return data
 }
 
