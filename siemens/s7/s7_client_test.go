@@ -1,8 +1,8 @@
 package s7
 
 import (
+	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/goutil/g"
 	"github.com/injoyai/io"
 	"github.com/injoyai/io/dial"
 	"github.com/injoyai/logs"

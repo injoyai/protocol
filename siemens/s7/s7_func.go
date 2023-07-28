@@ -2,8 +2,8 @@ package s7
 
 import (
 	"bufio"
+	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/goutil/g"
 )
 
 // ReadFunc 西门子协议数据读取

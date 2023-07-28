@@ -12,7 +12,7 @@ import (
 )
 
 func RegexpAll(s string) []string {
-	return regexp.MustCompile(`(http://|https://)[a-zAA-Z0-9/=_\-.:]+\.m3u8(|\?[a-zAA-Z0-9/=_\-.]+)`).FindAllString(s, -1)
+	return regexp.MustCompile(`(http)[a-zA-Z0-9\\/=_\-.:]+\.m3u8([?a-zA-Z0-9/=_\-.]*)`).FindAllString(s, -1)
 }
 
 func NewResponse(uri string) (*Response, error) {
@@ -46,7 +46,7 @@ func Decode(uri string, bs []byte) (resp *Response, err error) {
 				}
 				s = resp.host.ResolveReference(suffixURL).String()
 			}
-			resp.TS_URL = append(resp.TS_URL, s)
+			resp.TS_URL = append(resp.TS_URL, URL(s))
 			nextItem = false
 		case strings.HasPrefix(s, "#EXT-X-KEY:"):
 			s = strings.TrimPrefix(s, "#EXT-X-KEY:")
@@ -97,24 +97,42 @@ func Decode(uri string, bs []byte) (resp *Response, err error) {
 type Response struct {
 	filename string   //文件名称
 	host     *url.URL //主机,前缀
-	TS_URL   []string //下载地址
-	decrypt           //解密方式
+	TS_URL   []URL    //下载地址
+	Decrypt           //解密方式
 }
 
 func (this *Response) Filename() string {
 	return str.CropLast(this.filename, ".") + "ts"
 }
 
-type decrypt struct {
+type Decrypt struct {
 	Method string
 	Key    []byte
 	IV     []byte
 }
 
-func (this *decrypt) Decrypt(bs []byte) ([]byte, error) {
+func (this *Decrypt) Decrypt(bs []byte) ([]byte, error) {
 	switch this.Method {
 	case "AES-128":
 		return aes.DecryptCBC(bs, this.Key, this.IV)
 	}
 	return bs, nil
+}
+
+type URL string
+
+func (this URL) GetBytes(d ...func(bs []byte) ([]byte, error)) ([]byte, error) {
+	bs, err := http.GetBytes(string(this))
+	if err != nil {
+		return nil, err
+	}
+	for _, v := range d {
+		if v != nil {
+			bs, err = v(bs)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return bs, err
 }
