@@ -8,7 +8,6 @@ import (
 	io2 "io"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestNewAck(t *testing.T) {
@@ -37,24 +36,14 @@ func TestHandshake(t *testing.T) {
 		c.Debug()
 		c.SetPrintWithHEX()
 
-		totalDone := make(chan struct{}, 1)
+		//totalDone := make(chan struct{}, 1)
 
-		go c.Timer(time.Second, func() error {
-			res, err := c.WriteReadWithTimeout(NewRead(1, 2), time.Second*5)
-			logs.PrintErr(err)
-			handler(c, res)
-			return nil
-		})
-
-		go c.Run()
-		return
-
-		go func() {
-			for {
-				c.Write(NewZHTotal(1))
-				<-totalDone
-			}
-		}()
+		//go func() {
+		//	for {
+		//		c.Write(NewZHTotal(1))
+		//		<-totalDone
+		//	}
+		//}()
 
 		c.SetDealFunc(func(msg *io.IMessage) {
 			c.CloseWithErr(handler(msg.Client, msg.Bytes()))
