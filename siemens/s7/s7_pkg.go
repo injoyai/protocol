@@ -5,8 +5,6 @@ import (
 	"errors"
 	"github.com/injoyai/base/g"
 	"github.com/injoyai/conv"
-	"protocol"
-
 	"strconv"
 )
 
@@ -85,8 +83,6 @@ func (this Write) len() int {
 	}
 	return len(this.Value) + 4
 }
-
-var _ protocol.Interface = new(Request)
 
 type Request struct {
 	MsgID uint16 //消息id

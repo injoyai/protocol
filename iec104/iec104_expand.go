@@ -1,6 +1,7 @@
 package iec104
 
 import (
+	"bufio"
 	"github.com/injoyai/base/g"
 	"io"
 )
@@ -30,9 +31,9 @@ func (this Handler) Do(writer io.Writer, bytes g.Bytes) error {
 	default:
 
 		switch true {
-		case a.Type == TypeZHTotal && a.Reason == ReasonZHResponse:
+		case a.Type == C_IC_NA_1 && a.Reason == ReasonZHResponse:
 		//总召唤确认,响应数据
-		case a.Type == TypeZHYM && a.Reason == ReasonZHResponse:
+		case a.Type == C_CI_NA_1 && a.Reason == ReasonZHResponse:
 		//电度总召唤,响应数据
 		default:
 
@@ -46,4 +47,24 @@ func (this Handler) Do(writer io.Writer, bytes g.Bytes) error {
 
 	}
 	return nil
+}
+
+func ReadFunc(r *bufio.Reader) (bytes []byte, err error) {
+	for {
+		prefix, err := r.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		if prefix == Prefix {
+			length, err := r.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+			bytes = make([]byte, int(length)+2)
+			_, err = io.ReadAtLeast(r, bytes[2:], int(length))
+			bytes[0] = Prefix
+			bytes[1] = length
+			return bytes, err
+		}
+	}
 }

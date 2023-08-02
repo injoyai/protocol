@@ -35,6 +35,7 @@ func TestHandshake(t *testing.T) {
 		c.CloseWithErr(Handshake(c))
 		c.Debug()
 		c.SetPrintWithHEX()
+		c.SetReadFunc(ReadFunc)
 
 		//totalDone := make(chan struct{}, 1)
 
@@ -49,10 +50,6 @@ func TestHandshake(t *testing.T) {
 			c.CloseWithErr(handler(msg.Client, msg.Bytes()))
 		})
 	}).DoneAll()
-}
-
-func TestPkg(t *testing.T) {
-	t.Log(NewZHTotal(1).HEX())
 }
 
 func TestDecode(t *testing.T) {
@@ -71,4 +68,12 @@ func TestDecode(t *testing.T) {
 		return
 	}
 	t.Log(a)
+}
+
+func TestNewZHTotal(t *testing.T) {
+	t.Log(NewZHTotal(1).HEX())
+}
+
+func TestNewRead(t *testing.T) {
+	t.Log(NewRead(1, 1).HEX())
 }

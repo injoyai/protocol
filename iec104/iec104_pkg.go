@@ -31,35 +31,71 @@ func NewZHTotal(slave uint16) g.Bytes {
 	return (&APDU{
 		APCI: APCI{},
 		ASDU: ASDU{
-			Type:   TypeZHTotal,
+			Type:   C_IC_NA_1,
 			Slave:  slave,
 			Reason: ReasonStart,
 			Info: []Info{
 				{
-					Addr: 0,
-					QOI:  0x14,
+					Addr:  0,
+					Value: []byte{0x14},
 				},
 			},
 		},
 	}).Bytes()
 }
 
-//func NewRead(slave uint16, addr uint32) g.Bytes {
-//	return (&APDU{
-//		APCI: APCI{},
-//		ASDU: ASDU{
-//			Type:   TypeRead,
-//			Slave:  slave,
-//			Reason: ReasonAsk,
-//			Info: []Info{
-//				{
-//					Addr: addr,
-//					//QOI:  0x14,
-//				},
-//			},
-//		},
-//	}).Bytes()
-//}
+// NewRead 读取单个数据
+func NewRead(slave uint16, addr uint32) g.Bytes {
+	return (&APDU{
+		APCI: APCI{},
+		ASDU: ASDU{
+			Type:   C_RD_NA_1,
+			Slave:  slave,
+			Reason: ReasonAsk,
+			Info: []Info{
+				{
+					Addr: addr,
+				},
+			},
+		},
+	}).Bytes()
+}
+
+// NewSwitchOne 写入单点控制
+func NewSwitchOne(slave uint16, addr uint32, open bool) g.Bytes {
+	return (&APDU{
+		APCI: APCI{},
+		ASDU: ASDU{
+			Type:   C_SC_NA_1,
+			Slave:  slave,
+			Reason: ReasonStart,
+			Info: []Info{
+				{
+					Addr:  addr,
+					Value: []byte{conv.SelectUint8(open, 1, 0)},
+				},
+			},
+		},
+	}).Bytes()
+}
+
+// NewSwitchTwo 写入双点控制
+func NewSwitchTwo(slave uint16, addr uint32, open bool) g.Bytes {
+	return (&APDU{
+		APCI: APCI{},
+		ASDU: ASDU{
+			Type:   C_DC_NA_1,
+			Slave:  slave,
+			Reason: ReasonStart,
+			Info: []Info{
+				{
+					Addr:  addr,
+					Value: []byte{conv.SelectUint8(open, 2, 1)},
+				},
+			},
+		},
+	}).Bytes()
+}
 
 // NewSTARTDT_C 启动 U帧
 func NewSTARTDT_C() g.Bytes {
@@ -155,15 +191,15 @@ type ASDU struct {
 	Type   Type   //类型标识
 	Reason Reason //传送原因
 	Slave  uint16 //公共地址,即RTU站址
-	Info   []Info //信息对象
+	Info   []Info //信息体
 }
 
 func (this ASDU) Bytes() g.Bytes {
 	data := []byte(nil)
 	data = append(data, byte(this.Type))                         //类型标识,遥信...
 	data = append(data, byte(len(this.Info)))                    //可变结构限定词,信息对象数量
-	data = append(data, byte(this.Reason>>8), byte(this.Reason)) //传送原因
-	data = append(data, byte(this.Slave>>8), byte(this.Slave))   //公共地址,从站地址
+	data = append(data, byte(this.Reason), byte(this.Reason>>8)) //传送原因
+	data = append(data, byte(this.Slave), byte(this.Slave>>8))   //公共地址,从站地址
 	for _, v := range this.Info {
 		data = append(data, v.Bytes()...)
 	}
@@ -172,27 +208,13 @@ func (this ASDU) Bytes() g.Bytes {
 
 // Info 信息对象
 type Info struct {
-	Addr uint32 //信息对象地址, 操作地址 3字节
-	QOI  byte   //信息元素集, 操作类型
-	//Time time.Time //信息对象时标(可选)
+	Addr  uint32 //信息对象地址, 操作地址 3字节
+	Value []byte //实时值
 }
 
 func (this Info) Bytes() g.Bytes {
 	data := []byte{byte(this.Addr), byte(this.Addr >> 8), byte(this.Addr >> 16)}
-	data = append(data, this.QOI)
-	//if !this.Time.IsZero() {
-	//	//60*1000=60000 < 65535
-	//	mill := this.Time.Second()*1000 + int(this.Time.UnixNano()/1e6)%1000
-	//	data = append(data,
-	//		byte(mill),
-	//		byte(mill/256),
-	//		byte(this.Time.Minute()),
-	//		byte(this.Time.Hour()),
-	//		byte(this.Time.Day()),
-	//		byte(this.Time.Month()),
-	//		byte(this.Time.Year()-2000),
-	//	)
-	//}
+	data = append(data, g.Bytes(this.Value).Reverse()...)
 	return data
 }
 
@@ -283,7 +305,7 @@ func Decode(bs []byte) (a Response, err error) {
 			defer g.Recover(nil)
 			val := &Value{Addr: addr}
 			switch a.Type {
-			case TypeYCMemo:
+			case M_ME_NA_1:
 				//带品质描述的遥测 归一化遥测（整型) 值占3字节
 				val = &Value{
 					Addr:  addr,
@@ -291,15 +313,15 @@ func Decode(bs []byte) (a Response, err error) {
 					Memo:  Memo(bs[2]),
 				}
 				bs = bs[3:]
-			case TypeYXOne:
+			case M_SP_NA_1:
 				//单点遥信,对应数字输入DI,每个遥信占1个字节
-				val.Value = bs[1] == 1 //1是合,0是分
+				val.Value = bs[0] == 1 //1是合,0是分
 				bs = bs[1:]
-			case TypeYXTwo:
+			case M_DP_NA_1:
 				//双点遥信, 每个遥信占1个字节
-				val.Value = bs[1] == 2 //2是合,1是分
+				val.Value = bs[0] == 2 //2是合,1是分
 				bs = bs[1:]
-			case TypeYMSB12, TypeYMSB12_:
+			case M_IT_TB_1, M_IT_TB_1_:
 				//带7个字节长时标的电度量，每个电度量占12个字节
 				val.Value = math.Float32frombits(conv.Uint32(g.Bytes(bs[:5]).Reverse().Bytes()))
 				val.SetTime(bs[5:12])

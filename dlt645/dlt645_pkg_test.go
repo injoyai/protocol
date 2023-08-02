@@ -2,6 +2,7 @@ package dlt645
 
 import (
 	"encoding/hex"
+	"strings"
 	"testing"
 )
 
@@ -38,4 +39,13 @@ func TestEncode(t *testing.T) {
 	t.Log(p2.Control)
 	t.Log(p2.Mark.HEX())
 	t.Log(p2.Data.Sub0x33ReverseHEXToInt())
+}
+
+func TestEncode6(t *testing.T) {
+	p := &EnPkg{
+		No:      []byte{0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa},
+		Control: ControlGet,
+		Mark:    []byte{0, 0, 0xFF, 0},
+	}
+	t.Log(strings.ToUpper(p.HEX()))
 }
