@@ -1,4 +1,4 @@
-module protocol
+module github.com/injoyai/protocol
 
 go 1.16
 
