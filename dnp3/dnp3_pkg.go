@@ -116,23 +116,24 @@ const (
 
 // PkgNo 包序,从1开始,最大值63,不填写表示只有一个包
 type PkgNo struct {
-	Current uint8 //当前
-	Total   uint8 //总包数,最大值64
+	IsLast  bool  //是否是最后一包
+	IsFirst bool  //是否是第一包
+	Current uint8 //当前,最大值64
 }
 
 func (this PkgNo) Byte() byte {
 	b := byte(0)
-	if this.Current == this.Total {
+	if this.IsLast {
 		//表示最后一个包
 		b |= 0x80
-	}
-	if this.Current == 0 {
-		//未填写数据,表示只有一个包
-		return 0xC1
 	}
 	if this.Current == 1 {
 		//表示是第一个包
 		b |= 0x40
+	}
+	if this.Current == 0 {
+		//未填写数据,表示只有一个包
+		return 0xC1
 	}
 	b |= this.Current & 0x3F
 	return b
@@ -248,6 +249,236 @@ type DataType uint32
 func (this DataType) Bytes() []byte {
 	return []byte{byte(this >> 8), byte(this)}
 }
+
+func (this DataType) Name() string {
+	switch this {
+	case InputBit:
+		return "1bit数字输入"
+	case InputStatus:
+		return "状态数字输入"
+	case InputDisplacement:
+		return "不带时间的数字输入变位"
+	case InputDisplacementTime:
+		return "带时间的数字输入变位"
+	case InputDisplacementRelativeTime:
+		return "带相对时间的数字输入变位"
+	case OutputBit:
+		return "1bit数字输出(1位)"
+	case OutputStatus:
+		return "状态数字输出(8位)"
+	case OutputRelay:
+		return "继电器输出块"
+	case OutputPattern:
+		return "方式(pattern)控制块"
+	case InputCount32:
+		return "32位计数器值"
+	case InputCount16:
+		return "16位计数器值"
+	case InputCountSub32:
+		return "32位计数器差值"
+	case InputCountSub16:
+		return "16位计数器差值"
+	case InputCountNoStatus32:
+		return "32位无状态计数器值"
+	case InputCountNoStatus16:
+		return "16位无状态计数器值"
+	case InputCountNoStatusSub32:
+		return "32位无状态计数器差值"
+	case InputCountNoStatusSub16:
+		return "16位无状态计数器差值"
+	case InputCountFreeze32:
+		return "32位冻结计数器值"
+	case InputCountFreeze16:
+		return "16位冻结计数器值"
+	case InputCountFreezeSub32:
+		return "32位冻结计数器差值"
+	case InputCountFreezeSub16:
+		return "16位冻结计数器差值"
+	case InputCountFreezeTime32:
+		return "32位带时间冻结计数器值"
+	case InputCountFreezeTime16:
+		return "16位带时间冻结计数器值"
+	case InputCountFreezeNoStatus32:
+		return "32位无状态冻结计数器值"
+	case InputCountFreezeNoStatus16:
+		return "16位无状态冻结计数器值"
+	case InputCountFreezeNoStatusSub32:
+		return "32位无状态冻结计数器差值"
+	case InputCountFreezeNoStatusSub16:
+		return "16位无状态冻结计数器差值"
+	case InputCountLimitNoTime32:
+		return "32位无时间计数器值越限事件"
+	case InputCountLimitNoTime16:
+		return "16位无时间计数器值越限事件"
+	case InputCountLimitNoTimeSub32:
+		return "32位无时间计数器差值越限事件"
+	case InputCountLimitNoTimeSub16:
+		return "16位无时间计数器差值越限事件"
+	case InputCountLimitTime32:
+		return "32位带时间计数器值越限事件"
+	case InputCountLimitTime16:
+		return "16位带时间计数器值越限事件"
+	case InputCountLimitTimeSub32:
+		return "32位带时间计数器差值越限事件"
+	case InputCountLimitTimeSub16:
+		return "16位带时间计数器差值越限事件"
+	case InputCountLimitFreezeNoTime32:
+		return "32位无时间冻结计数器值越限事件"
+	case InputCountLimitFreezeNoTime16:
+		return "16位无时间冻结计数器值越限事件"
+	case InputCountLimitFreezeNoTimeSub32:
+		return "32位无时间冻结计数器差值越限事件"
+	case InputCountLimitFreezeNoTimeSub16:
+		return "16位无时间冻结计数器差值越限事件"
+	case InputCountLimitFreezeTime32:
+		return "32位带时间冻结计数器值越限事件"
+	case InputCountLimitFreezeTime16:
+		return "16位带时间冻结计数器值越限事件"
+	case InputCountLimitFreezeTimeSub32:
+		return "32位带时间冻结计数器差值越限事件"
+	case InputCountLimitFreezeTimeSub16:
+		return "16位带时间冻结计数器差值越限事件"
+	case InputAnalog32:
+		return "32位模拟量输入值"
+	case InputAnalog16:
+		return "16位模拟量输入值"
+	case InputAnalogNoStatus32:
+		return "32位无状态模拟量输入值"
+	case InputAnalogNoStatus16:
+		return "16位无状态模拟量输入值"
+	case InputAnalogFreeze32:
+		return "32位冻结模拟量输入值"
+	case InputAnalogFreeze16:
+		return "16位冻结模拟量输入值"
+	case InputAnalogFreezeTime32:
+		return "32位带时间冻结模拟量输入值"
+	case InputAnalogFreezeTime16:
+		return "16位带时间冻结模拟量输入值"
+	case InputAnalogFreezeNoStatus32:
+		return "32位无状态冻结模拟量输入值"
+	case InputAnalogFreezeNoStatus16:
+		return "16位无状态冻结模拟量输入值"
+	case InputAnalogLimitNoTime32:
+		return "32位无时间模拟量输入值越限事件"
+	case InputAnalogLimitNoTime16:
+		return "16位无时间模拟量输入值越限事件"
+	case InputAnalogLimitTime32:
+		return "32位带时间模拟量输入越限事件"
+	case InputAnalogLimitTime16:
+		return "16位带时间模拟量输入越限事件"
+	case InputAnalogLimitFreezeNoTime32:
+		return "32位无时间冻结模拟量输入值越限事件"
+	case InputAnalogLimitFreezeNoTime16:
+		return "16位无时间冻结模拟量输入值越限事件"
+	case InputAnalogLimitFreezeTime32:
+		return "32位带时间冻结模拟量输入值越限事件"
+	case InputAnalogLimitFreezeTime16:
+		return "16位带时间冻结模拟量输入值越限事件"
+	case OutputAnalog32:
+		return "32位模拟量输出"
+	case OutputAnalog16:
+		return "16位模拟量输出"
+	case OutputAnalogBlock32:
+		return "32位模拟量输出块(block)"
+	case OutputAnalogBlock16:
+		return "16位模拟量输出块(block)"
+	case DateTime:
+		return "日期和时间"
+	case DateTimeSustain:
+		return "持续日期和时间"
+	case TimeDelayAlmost:
+		return "近似延时(16位,秒)"
+	case TimeDelayAccurate:
+		return "精确延时(16位,秒)"
+	case Class0:
+		return "Class0类数据,所有非1,2,3类数据"
+	case Class1:
+		return "Class1类数据(通常为某组信息对象的变化)"
+	case Class2:
+		return "Class2类数据(通常为某组信息对象的变化)"
+	case Class3:
+		return "Class3类数据(通常为某组信息对象的变化)"
+	}
+	return ""
+}
+
+var (
+	AllDataType = []DataType{
+		InputBit,
+		InputStatus,
+		InputDisplacement,
+		InputDisplacementTime,
+		InputDisplacementRelativeTime,
+		OutputBit,
+		OutputStatus,
+		OutputRelay,
+		OutputPattern,
+		InputCount32,
+		InputCount16,
+		InputCountSub32,
+		InputCountSub16,
+		InputCountNoStatus32,
+		InputCountNoStatus16,
+		InputCountNoStatusSub32,
+		InputCountNoStatusSub16,
+		InputCountFreeze32,
+		InputCountFreeze16,
+		InputCountFreezeSub32,
+		InputCountFreezeSub16,
+		InputCountFreezeTime32,
+		InputCountFreezeTime16,
+		InputCountFreezeNoStatus32,
+		InputCountFreezeNoStatus16,
+		InputCountFreezeNoStatusSub32,
+		InputCountFreezeNoStatusSub16,
+		InputCountLimitNoTime32,
+		InputCountLimitNoTime16,
+		InputCountLimitNoTimeSub32,
+		InputCountLimitNoTimeSub16,
+		InputCountLimitTime32,
+		InputCountLimitTime16,
+		InputCountLimitTimeSub32,
+		InputCountLimitTimeSub16,
+		InputCountLimitFreezeNoTime32,
+		InputCountLimitFreezeNoTime16,
+		InputCountLimitFreezeNoTimeSub32,
+		InputCountLimitFreezeNoTimeSub16,
+		InputCountLimitFreezeTime32,
+		InputCountLimitFreezeTime16,
+		InputCountLimitFreezeTimeSub32,
+		InputCountLimitFreezeTimeSub16,
+		InputAnalog32,
+		InputAnalog16,
+		InputAnalogNoStatus32,
+		InputAnalogNoStatus16,
+		InputAnalogFreeze32,
+		InputAnalogFreeze16,
+		InputAnalogFreezeTime32,
+		InputAnalogFreezeTime16,
+		InputAnalogFreezeNoStatus32,
+		InputAnalogFreezeNoStatus16,
+		InputAnalogLimitNoTime32,
+		InputAnalogLimitNoTime16,
+		InputAnalogLimitTime32,
+		InputAnalogLimitTime16,
+		InputAnalogLimitFreezeNoTime32,
+		InputAnalogLimitFreezeNoTime16,
+		InputAnalogLimitFreezeTime32,
+		InputAnalogLimitFreezeTime16,
+		OutputAnalog32,
+		OutputAnalog16,
+		OutputAnalogBlock32,
+		OutputAnalogBlock16,
+		DateTime,
+		DateTimeSustain,
+		TimeDelayAlmost,
+		TimeDelayAccurate,
+		Class0,
+		Class1,
+		Class2,
+		Class3,
+	}
+)
 
 const (
 	InputBit                      DataType = 0x0101 //1bit数字输入
@@ -366,6 +597,8 @@ func Decode(bs []byte) (*Pkg, error) {
 
 	p.Body = Body{
 		PkgNo: PkgNo{
+			IsLast:  bs[10] >= 0x80,
+			IsFirst: bs[10]<<1 >= 0x80,
 			Current: bs[10] & 0x3F,
 		},
 		Control: BodyControl{

@@ -72,5 +72,5 @@ func TestDecode(t *testing.T) {
 		return
 	}
 	t.Logf("%#v", *p)
-	t.Log(p.Bytes().HEX())
+	t.Log(p.Bytes().HEX() == s)
 }
