@@ -25,7 +25,7 @@ type Pkg struct {
 	Function Function
 	Control  Control
 	DNET     uint16 //最终目标网络号，2个字节。
-	DLEN     uint8
+	DLEN     uint8  //最终目标的MAC层地址的长度，1个字节，0表示对目标网络的广播。
 	DADR     []byte
 	SNET     uint16
 	SLEN     uint8

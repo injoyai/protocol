@@ -59,8 +59,8 @@ func (this Header) CRC16(length uint8) uint16 {
 	data := conv.Bytes(Prefix)
 	data = append(data, length)
 	data = append(data, this.Control.Byte())
-	data = append(data, conv.Bytes(this.To)...)
-	data = append(data, conv.Bytes(this.From)...)
+	data = append(data, byte(this.To), byte(this.To>>8))
+	data = append(data, byte(this.From), byte(this.From>>8))
 	return conv.Uint16(crc.Encrypt16(data, crc.CRC16_DNP).Reverse().Bytes())
 }
 
@@ -68,8 +68,8 @@ func (this Header) Bytes(length uint8) g.Bytes {
 	data := conv.Bytes(Prefix)
 	data = append(data, length)                                          //长度
 	data = append(data, this.Control.Byte())                             //控制码
-	data = append(data, conv.Bytes(this.To)...)                          //目的地
-	data = append(data, conv.Bytes(this.From)...)                        //源地址
+	data = append(data, byte(this.To), byte(this.To>>8))                 //目的地
+	data = append(data, byte(this.From), byte(this.From>>8))             //源地址
 	data = append(data, crc.Encrypt16(data, crc.CRC16_DNP).Reverse()...) //crc校验
 	return data
 }
@@ -127,15 +127,14 @@ func (this PkgNo) Byte() byte {
 		//表示最后一个包
 		b |= 0x80
 	}
-	if this.Current == 1 {
+	if this.IsFirst {
 		//表示是第一个包
 		b |= 0x40
 	}
-	if this.Current == 0 {
-		//未填写数据,表示只有一个包
-		return 0xC1
-	}
 	b |= this.Current & 0x3F
+	if b == 0 {
+		b = 0xC1
+	}
 	return b
 }
 
@@ -148,10 +147,32 @@ func (this BodyFunction) Byte() byte {
 }
 
 const (
-	Read     BodyFunction = 0x01 //读数据
-	Write    BodyFunction = 0x02 //写数据
-	Response BodyFunction = 0x81 //响应
-	//... todo 待补充
+	Confirm                   BodyFunction = 0x00 //确认
+	Read                      BodyFunction = 0x01 //读数据
+	Write                     BodyFunction = 0x02 //写数据
+	Select                    BodyFunction = 0x03 //选择
+	Operate                   BodyFunction = 0x04 //执行
+	DirectOperate             BodyFunction = 0x05 //直接执行
+	DirectOperateNoAck        BodyFunction = 0x06 //直接执行，不需要响应
+	ImmediateFreeze           BodyFunction = 0x07 //立即冻结
+	ImmediateFreezeNoAck      BodyFunction = 0x08 //立即冻结，不需要响应
+	FreezeClear               BodyFunction = 0x09 //冻结清除
+	FreezeClearNoAck          BodyFunction = 0x0A //冻结清除，不需要响应
+	FreezeWithTime            BodyFunction = 0x0B //带时间冻结
+	FreezeWithTimeNoAck       BodyFunction = 0x0C //带时间冻结，不需要响应
+	ColdRestart               BodyFunction = 0x0D //冷启动
+	WarmRestart               BodyFunction = 0x0E //热启动
+	InitDataToDefault         BodyFunction = 0x0F //初始化数据到默认
+	InitAPP                   BodyFunction = 0x10 //初始化应用
+	StartAPP                  BodyFunction = 0x11 //启动应用
+	StopAPP                   BodyFunction = 0x12 //停止应用
+	SaveConfig                BodyFunction = 0x13 //保存配置
+	EnableUnsolicitedMessage  BodyFunction = 0x14 //自发报文使能
+	DisableUnsolicitedMessage BodyFunction = 0x15 //自发报文禁止
+	AssignClass               BodyFunction = 0x16 //分配类
+	DelayMeasurement          BodyFunction = 0x17 //延时测量
+	Response                  BodyFunction = 0x81 //响应
+	UnsolicitedMessage        BodyFunction = 0x82 //自发报文
 )
 
 type Body struct {
@@ -200,10 +221,11 @@ func (this Data) Bytes() []byte {
 }
 
 type BodyControl struct {
-	IsFirst  bool  //是否是报文第一分片
-	IsFinlay bool  //是否是报文最后一分片
-	NeedAck  bool  //是否需要应答
-	No       uint8 //分片序号，从1开始，最大值15
+	IsFirst     bool  //是否是报文第一分片
+	IsFinlay    bool  //是否是报文最后一分片
+	NeedAck     bool  //是否需要应答
+	Unsolicited bool  //是否主动发起
+	No          uint8 //分片序号，从1开始，最大值15
 }
 
 func (this BodyControl) Byte() byte {
@@ -216,6 +238,9 @@ func (this BodyControl) Byte() byte {
 	}
 	if this.NeedAck {
 		b |= 0x20
+	}
+	if this.Unsolicited {
+		b |= 0x10
 	}
 	b |= this.No & 0x1F
 	if b == 0 {
@@ -563,9 +588,8 @@ const (
 )
 
 func Decode(bs []byte) (*Pkg, error) {
-
 	if len(bs) < 13 {
-		return nil, fmt.Errorf("基础数据长度错误,预期(%d),得到(%d)", 10, len(bs))
+		return nil, fmt.Errorf("基础数据长度错误,预期(%d),得到(%d)", 13, len(bs))
 	}
 
 	if conv.Uint16(bs[:2]) != Prefix {
@@ -574,7 +598,7 @@ func Decode(bs []byte) (*Pkg, error) {
 
 	length := int(bs[2])
 	if len(bs) != length+7 {
-		return nil, fmt.Errorf("数据长度错误,预期(%d),得到(%d)", length+10, len(bs))
+		return nil, fmt.Errorf("数据长度错误,预期(%d),得到(%d)", length+7, len(bs))
 	}
 
 	p := &Pkg{
@@ -585,8 +609,8 @@ func Decode(bs []byte) (*Pkg, error) {
 				Correct:  bs[3]<<2 >= 0x80,
 				Function: HeaderFunction(bs[3] << 3 >> 3),
 			},
-			From: conv.Uint16(bs[6:8]),
-			To:   conv.Uint16(bs[4:6]),
+			From: conv.Uint16([]byte{bs[7], bs[6]}),
+			To:   conv.Uint16([]byte{bs[5], bs[4]}),
 		},
 		Body: Body{},
 	}
@@ -602,10 +626,11 @@ func Decode(bs []byte) (*Pkg, error) {
 			Current: bs[10] & 0x3F,
 		},
 		Control: BodyControl{
-			IsFirst:  bs[11] >= 0x80,
-			IsFinlay: bs[11]<<1 >= 0x80,
-			NeedAck:  bs[11]<<2 >= 0x80,
-			No:       bs[11] & 0x1F,
+			IsFirst:     bs[11] >= 0x80,
+			IsFinlay:    bs[11]<<1 >= 0x80,
+			NeedAck:     bs[11]<<2 >= 0x80,
+			Unsolicited: bs[11]<<3 >= 0x80,
+			No:          bs[11] & 0x0F,
 		},
 		Function: BodyFunction(bs[12]),
 	}
@@ -614,28 +639,33 @@ func Decode(bs []byte) (*Pkg, error) {
 	for len(bs) >= 2 {
 		data := Data{
 			DataType: DataType(conv.Uint16(bs[:2])),
-			Qualifier: BodyQualifier{
+		}
+		if len(bs) > 2 {
+			data.Qualifier = BodyQualifier{
 				Index: bs[2] << 1 >> 5,
 				Code:  bs[2] << 4 >> 4,
-			},
-		}
-		bs = bs[2:]
-		switch data.Qualifier.Code {
-		case 6:
-		case 0, 1, 2, 3, 4, 5:
-			if len(bs) < 2 {
-				return nil, errors.New("数据域范围(变程)长度错误")
 			}
-			data.Range = bs[:2]
+			bs = bs[3:]
+			switch data.Qualifier.Code {
+			case 6:
+			case 0, 1, 2, 3, 4, 5:
+				if len(bs) < 2 {
+					return nil, errors.New("数据域范围(变程)长度错误")
+				}
+				data.Range = bs[:2]
+				bs = bs[2:]
+			case 7, 8, 9:
+				if len(bs) < 1 {
+					return nil, errors.New("数据域范围(变程)长度错误")
+				}
+				data.Range = bs[:1]
+				bs = bs[1:]
+			}
+			p.Body.Datas = append(p.Body.Datas, data)
+		} else {
 			bs = bs[2:]
-		case 7, 8, 9:
-			if len(bs) < 1 {
-				return nil, errors.New("数据域范围(变程)长度错误")
-			}
-			data.Range = bs[:1]
-			bs = bs[1:]
 		}
-		p.Body.Datas = append(p.Body.Datas, data)
+
 	}
 
 	return p, nil
@@ -662,15 +692,26 @@ func ReadFunc(r *bufio.Reader) ([]byte, error) {
 					return nil, err
 				}
 
-				buf := make([]byte, length)
-				if _, err := io.ReadAtLeast(r, buf, int(length)); err != nil {
+				buf := make([]byte, length+4)
+				if _, err := io.ReadAtLeast(r, buf, int(length+4)); err != nil {
 					return nil, err
 				}
 
-				return buf, nil
+				return append([]byte{b1, b2, length}, buf...), nil
 
 			}
 		}
 	}
 
+}
+
+func DealUnsolicited(p *Pkg, c *io.Client) error {
+	switch p.Body.Function {
+	case UnsolicitedMessage:
+		c.Tag().Set("from", p.Header.To)
+		c.Tag().Set("to", p.Header.From)
+		_, err := c.Write(ConfirmPkg(p.Header.To, p.Header.From).Bytes())
+		return err
+	}
+	return nil
 }
