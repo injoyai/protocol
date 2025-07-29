@@ -1,7 +1,7 @@
 package bacnet
 
 import (
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"math"
 	"net"
@@ -31,7 +31,6 @@ Pkg
 +-------+-----------+-------+---------------+---------------+
 |1字节	|1字节		|1字节	|				|				|
 +-------+-----------+-------+---------------+---------------+
-
 */
 type Pkg struct {
 	BVLC
@@ -39,7 +38,7 @@ type Pkg struct {
 	APDU
 }
 
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 	data := []byte(nil)
 	npduBytes := this.NPDU.Bytes()
 	apduBytes := this.APDU.Bytes()
@@ -56,9 +55,9 @@ BVLC Type： 0x81，代表BACnet/IP网络
 
 BVLC Function： 指定报文的类型，何种作用；本应用使用的报文类型分为两种：
 
-                             0A：点对点通讯
+	0A：点对点通讯
 
-                             0B：广播通信
+	0B：广播通信
 
 Length： 指定报文的长度，包括BVLC Type、BVLC Function以及本身在内
 */
@@ -68,7 +67,7 @@ type BVLC struct {
 	Function Function
 }
 
-func (this *BVLC) Bytes(length uint16) g.Bytes {
+func (this *BVLC) Bytes(length uint16) types.Bytes {
 	data := make([]byte, 10)
 	copy(data[0:4], this.IP.To4())
 	if this.Port == 0 {
@@ -137,7 +136,7 @@ type NPDU struct {
 	Vendor  uint16  //如果控制域的比特7为1和报文类型域的值为X‘80’至X‘FF’时，Vendor ID域存在，生产商可以有2个字节来编码自己的专有网络层报文类型。
 }
 
-func (this *NPDU) Bytes() g.Bytes {
+func (this *NPDU) Bytes() types.Bytes {
 	data := []byte{0x01} //版本号，1
 	data = append(data, this.Control.Byte())
 	if this.Control.HasDNet {
@@ -226,7 +225,7 @@ type APDU struct {
 	ServiceRequest []byte
 }
 
-func (this *APDU) Bytes() g.Bytes {
+func (this *APDU) Bytes() types.Bytes {
 	data := []byte(nil)
 
 	//data = append(data, this.Type.Byte()|this.Flag.Byte())

@@ -14,7 +14,7 @@ func TestDecode(t *testing.T) {
 		return
 	}
 	t.Log(pkg.Data.Sub0x33())
-	f, err := pkg.Data.Sub0x33ReverseHEXToFloat64(2)
+	f, err := pkg.Data.Sub0x33ReverseHEXToFloat(2)
 	if err != nil {
 		t.Error(err)
 		return

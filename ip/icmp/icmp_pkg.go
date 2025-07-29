@@ -1,7 +1,7 @@
 package icmp
 
 import (
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"net"
 	"time"
 )
@@ -65,16 +65,13 @@ Type	Code	描述
 12		1		缺少必须选项
 17		0		地址掩码请求
 18		0		地址掩码应答
-
-
-
 */
 type Pkg struct {
 	Type Type  //类型
 	Code uint8 //代码
 }
 
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 	data := []byte(nil)
 	data = append(data, uint8(this.Type))
 	data = append(data, this.Code)

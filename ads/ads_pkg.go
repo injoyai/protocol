@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"io"
 )
@@ -48,7 +48,7 @@ type Pkg struct {
 	Data []byte
 }
 
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 	data := []byte(nil)
 	dataBytes := this.Data
 	amsBytes := this.AMS.Bytes(uint32(len(dataBytes)))
@@ -71,10 +71,10 @@ type Header struct {
 	Reserved uint16
 }
 
-func (this Header) Bytes(length uint32) g.Bytes {
+func (this Header) Bytes(length uint32) types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.Reserved)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(length)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.Reserved)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(length)).Reverse()...)
 	return data
 }
 
@@ -96,7 +96,7 @@ type AMS struct {
 	InvokeID   uint32
 }
 
-func (this *AMS) Bytes(length uint32) g.Bytes {
+func (this *AMS) Bytes(length uint32) types.Bytes {
 	data := []byte(nil)
 	data = append(data, this.Target[:]...)
 	data = append(data, conv.Bytes(this.TargetPort)...)
@@ -104,15 +104,15 @@ func (this *AMS) Bytes(length uint32) g.Bytes {
 	data = append(data, conv.Bytes(this.SourcePort)...)
 	data = append(data, this.CommandID.Bytes().Reverse()...)
 	data = append(data, this.Flag.Bytes().Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(length)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.ErrorCode)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.InvokeID)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(length)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.ErrorCode)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.InvokeID)).Reverse()...)
 	return data
 }
 
 type CommandID uint16
 
-func (this CommandID) Bytes() g.Bytes {
+func (this CommandID) Bytes() types.Bytes {
 	return []byte{byte(this >> 8), byte(this)}
 }
 
@@ -164,7 +164,7 @@ type Flag struct {
 	Response       bool //是否是响应,否则是请求
 }
 
-func (this Flag) Bytes() g.Bytes {
+func (this Flag) Bytes() types.Bytes {
 	b := uint16(0)
 	if this.Broadcast {
 		b |= 0x8000

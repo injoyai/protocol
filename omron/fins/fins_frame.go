@@ -2,7 +2,7 @@ package fins
 
 import (
 	"errors"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 )
 
@@ -71,7 +71,7 @@ type Frame struct {
 	Data []byte //请求类型对应的数据
 }
 
-func (this *Frame) Bytes() g.Bytes {
+func (this *Frame) Bytes() types.Bytes {
 	if this.GCT == 0 {
 		this.GCT = 2
 	}
@@ -141,7 +141,7 @@ type Read struct {
 	Length  uint16 //长度,数量
 }
 
-func (this Read) Bytes() g.Bytes {
+func (this Read) Bytes() types.Bytes {
 	data := []byte{uint8(this.Area)}
 	data = append(data, conv.Bytes(this.Address)[1:]...)
 	data = append(data, conv.Bytes(this.Length)...)
@@ -154,7 +154,7 @@ type Write struct {
 	Value   []byte //写入的值
 }
 
-func (this Write) Bytes() g.Bytes {
+func (this Write) Bytes() types.Bytes {
 	data := []byte{uint8(this.Area)}
 	data = append(data, conv.Bytes(this.Address)[1:]...)
 	data = append(data, conv.Bytes(uint16(len(this.Value)))...)

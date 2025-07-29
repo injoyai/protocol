@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/bytes/crypt/crc"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/crypt/crc"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/io"
+	"io"
 )
 
 /*
@@ -25,7 +25,6 @@ const (
 /*
 Pkg
 
-
 例 读
 05 64 14 c4 00 04 01 00 e9 b6 c1 c1 01 3c 02 06 3c 03 06 3c 04 06 3c 01 06 62 01
 
@@ -38,7 +37,7 @@ type Pkg struct {
 }
 
 // Bytes 0564 12 C4 0300 0400 152D
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 	data := []byte(nil)
 	bodyBytes := this.Body.Bytes()
 	data = append(data, this.Header.Bytes(uint8(len(bodyBytes)+3))...)
@@ -64,7 +63,7 @@ func (this Header) CRC16(length uint8) uint16 {
 	return conv.Uint16(crc.Encrypt16(data, crc.CRC16_DNP).Reverse().Bytes())
 }
 
-func (this Header) Bytes(length uint8) g.Bytes {
+func (this Header) Bytes(length uint8) types.Bytes {
 	data := conv.Bytes(Prefix)
 	data = append(data, length)                                          //长度
 	data = append(data, this.Control.Byte())                             //控制码
@@ -182,7 +181,7 @@ type Body struct {
 	Datas    []Data       //数据
 }
 
-func (this Body) Bytes() g.Bytes {
+func (this Body) Bytes() types.Bytes {
 	data := []byte(nil)
 	data = append(data, this.PkgNo.Byte())
 	data = append(data, this.Control.Byte())
@@ -253,7 +252,9 @@ func (this BodyControl) Byte() byte {
 BodyQualifier
 0: 预留
 1~3: 索引规模,规定前置于每个数据对象的索引规模或对象的规模
-	 在请求报文中，当限定词码 (Qualifier Code) 等于 11时,1、2、3分别代表数据对象前的索引是1、2、4个字节。0无效。 4、5、6、7保留。
+
+	在请求报文中，当限定词码 (Qualifier Code) 等于 11时,1、2、3分别代表数据对象前的索引是1、2、4个字节。0无效。 4、5、6、7保留。
+
 4-7: 限定词码,用以规定变程 (Range) 意义。当限定词码取值 0～5时，变程段包含1个开始范围 (Start Range) 和1个结束范围 (Stop range)。当限定词码取值 6时，则 Range 段的长为零 (即无变程段 )，因为所指定的是所要求的数据类型的全部数据对象。当限定词码取值为 7～ 9 时，则变程段由一个计数值所组成，它指明所讨论的数据对象的数目。
 */
 type BodyQualifier struct {
@@ -705,13 +706,13 @@ func ReadFunc(r *bufio.Reader) ([]byte, error) {
 
 }
 
-func DealUnsolicited(p *Pkg, c *io.Client) error {
-	switch p.Body.Function {
-	case UnsolicitedMessage:
-		c.Tag().Set("from", p.Header.To)
-		c.Tag().Set("to", p.Header.From)
-		_, err := c.Write(ConfirmPkg(p.Header.To, p.Header.From).Bytes())
-		return err
-	}
-	return nil
-}
+//func DealUnsolicited(p *Pkg, c *io.Client) error {
+//	switch p.Body.Function {
+//	case UnsolicitedMessage:
+//		c.Tag().Set("from", p.Header.To)
+//		c.Tag().Set("to", p.Header.From)
+//		_, err := c.Write(ConfirmPkg(p.Header.To, p.Header.From).Bytes())
+//		return err
+//	}
+//	return nil
+//}

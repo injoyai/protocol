@@ -3,7 +3,7 @@ package http
 import (
 	"bytes"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"io"
 	"net/http"
@@ -13,7 +13,7 @@ import (
 
 type Request http.Request
 
-func (this *Request) Bytes() g.Bytes {
+func (this *Request) Bytes() types.Bytes {
 	bs, _ := httputil.DumpRequest((*http.Request)(this), true)
 	return bs
 }
@@ -117,7 +117,7 @@ func (this *Response) SetBody(body []byte) *Response {
 	return this
 }
 
-func (this *Response) Bytes() g.Bytes {
+func (this *Response) Bytes() types.Bytes {
 	data := []byte(fmt.Sprintf("HTTP/1.1 %d %s\r\n", this.StatusCode, this.StatusCodeText))
 	for i, v := range this.Header {
 		data = append(data, []byte(fmt.Sprintf("%s: %s\r\n", i, strings.Join(v, "; ")))...)
@@ -138,30 +138,30 @@ func NewResponse(statusCode int, body []byte) *Response {
 	}
 }
 
-func NewResponseBytes(statusCode int, body []byte) g.Bytes {
+func NewResponseBytes(statusCode int, body []byte) types.Bytes {
 	return NewResponse(statusCode, body).Bytes()
 }
 
-func NewResponseBytes200(body []byte) g.Bytes {
+func NewResponseBytes200(body []byte) types.Bytes {
 	return NewResponse(200, body).Bytes()
 }
 
-func NewResponseBytes204() g.Bytes {
+func NewResponseBytes204() types.Bytes {
 	return NewResponse(204, nil).Bytes()
 }
 
-func NewResponseBytes301(addr string) g.Bytes {
+func NewResponseBytes301(addr string) types.Bytes {
 	return NewResponse(301, nil).AddHeader("Location", addr).Bytes()
 }
 
-func NewResponseBytes302(addr string) g.Bytes {
+func NewResponseBytes302(addr string) types.Bytes {
 	return NewResponse(302, nil).AddHeader("Location", addr).Bytes()
 }
 
-func NewResponse400(body []byte) g.Bytes {
+func NewResponse400(body []byte) types.Bytes {
 	return NewResponseBytes(400, body)
 }
 
-func NewResponse500(body []byte) g.Bytes {
+func NewResponse500(body []byte) types.Bytes {
 	return NewResponseBytes(500, body)
 }

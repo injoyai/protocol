@@ -76,7 +76,7 @@ func WriteIByte(addr uint32, value []byte) *Request {
 
 // WriteDBBit 写DB位
 func WriteDBBit(addr uint32, value bool) *Request {
-	return NewWrite(addr, []byte{conv.SelectUint8(value, 1, 0)}, Byte, DataBlock)
+	return NewWrite(addr, []byte{conv.Select[uint8](value, 1, 0)}, Byte, DataBlock)
 }
 
 // WriteDBByte 写DB字节

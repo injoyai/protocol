@@ -3,24 +3,23 @@ package dlt645
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/injoyai/base/bytes"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 )
 
 type EnPkg struct {
-	No       bytes.Entity //表地址,传入正序
-	Control  Control      //控制码,枚举
-	Password bytes.Entity //密码,可选
-	Mark     Mark         //标识符,枚举
-	Data     bytes.Entity //数据域
+	No       types.Bytes //表地址,传入正序
+	Control  Control     //控制码,枚举
+	Password types.Bytes //密码,可选
+	Mark     Mark        //标识符,枚举
+	Data     types.Bytes //数据域
 }
 
 func (this EnPkg) HEX() string {
 	return hex.EncodeToString(this.Bytes())
 }
 
-func (this *EnPkg) Bytes() g.Bytes {
+func (this *EnPkg) Bytes() types.Bytes {
 	bs := []byte{0x68}                                                //起始帧
 	bs = append(bs, this.No.Reverse()...)                             //表地址
 	bs = append(bs, byte(0x68))                                       //中间帧
@@ -29,25 +28,25 @@ func (this *EnPkg) Bytes() g.Bytes {
 	bs = append(bs, byte(length))                                     //数据域长度
 	bs = append(bs, this.Mark.Reverse().Add0x33()...)                 //标识符
 	bs = append(bs, this.Data.Reverse().Add0x33()...)                 //数据域
-	bs = append(bs, bytes.Entity(bs).SumByte())                       //校验和
+	bs = append(bs, types.Bytes(bs).Sum())                            //校验和
 	bs = append(bs, byte(0x16))                                       //结束帧
 	return bs
 }
 
 type DePkg struct {
-	No      string       `json:"no"`
-	Control Control      `json:"control"`
-	Mark    Mark         `json:"mark"`
-	Data    bytes.Entity `json:"data"`
+	No      string      `json:"no"`
+	Control Control     `json:"control"`
+	Mark    Mark        `json:"mark"`
+	Data    types.Bytes `json:"data"`
 }
 
 // Result 默认结果,根据国标(部分,常用)
 func (this *DePkg) Result() (float64, error) {
 	decimals := int(MarkMap[this.Mark.HEX()].Decimals)
-	return this.Data.Sub0x33ReverseHEXToFloat64(decimals)
+	return this.Data.Sub0x33ReverseHEXToFloat(decimals)
 }
 
-func Decode(bs bytes.Entity) (*DePkg, error) {
+func Decode(bs types.Bytes) (*DePkg, error) {
 
 	//去除0xfe , 4个fe是唤醒设备作用
 	for len(bs) > 0 && bs[0] == 0xfe {

@@ -2,7 +2,7 @@ package knx
 
 import (
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 )
 
 type ConnReq struct {
@@ -36,7 +36,7 @@ type ConnReq struct {
 	//CRI HAPI
 }
 
-func (this ConnReq) Bytes() g.Bytes {
+func (this ConnReq) Bytes() types.Bytes {
 	return Frame{
 		Service: ConnReqService,
 		HAPIs:   []HAPI{this.Client, this.Gateway, NewCRI()},
@@ -66,7 +66,7 @@ type ConnStateReq struct {
 	Client  HAPI
 }
 
-func (this ConnStateReq) Bytes() g.Bytes {
+func (this ConnStateReq) Bytes() types.Bytes {
 	return Frame{
 		Service: ConnStateReqService,
 		HAPIs:   []HAPI{{this.Channel, 0}, this.Client},
@@ -95,7 +95,7 @@ type DiscReq struct {
 	Client  HAPI
 }
 
-func (this DiscReq) Bytes() g.Bytes {
+func (this DiscReq) Bytes() types.Bytes {
 	return Frame{
 		Service: DiscReqService,
 		HAPIs:   []HAPI{{this.Channel, 0}, this.Client},
@@ -130,7 +130,7 @@ type TunnelReq struct {
 	Cemi HAPI
 }
 
-func (this TunnelReq) Bytes() g.Bytes {
+func (this TunnelReq) Bytes() types.Bytes {
 	return Frame{
 		Service: TunnelReqService,
 		HAPIs:   []HAPI{NewHAPI(this.Channel, []byte{this.SeqNumber, 0}), this.Cemi},

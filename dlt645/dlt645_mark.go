@@ -1,13 +1,13 @@
 package dlt645
 
 import (
-	"github.com/injoyai/base/bytes"
+	"github.com/injoyai/base/types"
 )
 
 // Mark
 // 第三字节是序号(例如0是总,1对应1通道),
 // 第四字节是天数(例如:1是上一日)
-type Mark = bytes.Entity
+type Mark = types.Bytes
 
 var (
 	MarkSetReset     Mark = []byte{0x12, 0x34, 0x56, 0x01}                                                 //电表清零

@@ -2,7 +2,7 @@ package ads
 
 import (
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 )
 
@@ -21,11 +21,11 @@ type ReadReq struct {
 	Length      uint32 //Length of the data (in bytes) which should be read , 翻译: 应读取的数据的长度
 }
 
-func (this ReadReq) Bytes() g.Bytes {
+func (this ReadReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.Length)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.Length)).Reverse()...)
 	return data
 }
 
@@ -35,7 +35,7 @@ type ReadResp struct {
 	Data   []byte //Data which are supplied back , 翻译: 读取的数据
 }
 
-func DecodeRead(bs g.Bytes) (*ReadResp, error) {
+func DecodeRead(bs types.Bytes) (*ReadResp, error) {
 	if len(bs) < 8 {
 		return nil, fmt.Errorf("基础长度错误: 预期(8) 得到(%d)", len(bs))
 	}
@@ -57,12 +57,12 @@ type WriteReq struct {
 	Data []byte //Data which are written in ADS device , 翻译: 写入ADS设备的数据
 }
 
-func (this WriteReq) Bytes() g.Bytes {
+func (this WriteReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
-	data = append(data, g.Bytes(this.Data).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
+	data = append(data, types.Bytes(this.Data).Reverse()...)
 	return data
 }
 
@@ -70,7 +70,7 @@ type WriteResp struct {
 	Result Result //ADS error number , 翻译: ADS错误编号
 }
 
-func DecodeWrite(bs g.Bytes) (*WriteResp, error) {
+func DecodeWrite(bs types.Bytes) (*WriteResp, error) {
 	if bs.Len() != 4 {
 		return nil, fmt.Errorf("基础长度错误: 预期(4) 得到(%d)", bs.Len())
 	}
@@ -82,7 +82,7 @@ func DecodeWrite(bs g.Bytes) (*WriteResp, error) {
 
 type ReadStateReq struct{}
 
-func (this ReadStateReq) Bytes() g.Bytes {
+func (this ReadStateReq) Bytes() types.Bytes {
 	return nil
 }
 
@@ -99,12 +99,12 @@ type WriteControlReq struct {
 	Data []byte //Additional Data which are sent to the ADS device , 翻译: 发送给ADS设备的附加数据
 }
 
-func (this WriteControlReq) Bytes() g.Bytes {
+func (this WriteControlReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.ADSState)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.DeviceState)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
-	data = append(data, g.Bytes(this.Data).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.ADSState)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.DeviceState)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
+	data = append(data, types.Bytes(this.Data).Reverse()...)
 	return data
 }
 
@@ -122,15 +122,15 @@ type AddNoticeReq struct {
 	Reserved         [16]byte //Must be set to 0 翻译: 必须为0
 }
 
-func (this AddNoticeReq) Bytes() g.Bytes {
+func (this AddNoticeReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.Length)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.TransmissionMode)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.MaxDelay)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.CycleTime)).Reverse()...)
-	data = append(data, g.Bytes(this.Reserved[:]).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.Length)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.TransmissionMode)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.MaxDelay)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.CycleTime)).Reverse()...)
+	data = append(data, types.Bytes(this.Reserved[:]).Reverse()...)
 	return data
 }
 
@@ -143,8 +143,8 @@ type DelNoticeReq struct {
 	NotificationHandle uint32 //Handle of notification , 翻译: 通知句柄
 }
 
-func (this DelNoticeReq) Bytes() g.Bytes {
-	return g.Bytes(conv.Bytes(this.NotificationHandle)).Reverse()
+func (this DelNoticeReq) Bytes() types.Bytes {
+	return types.Bytes(conv.Bytes(this.NotificationHandle)).Reverse()
 }
 
 type DelNoticeResp struct {
@@ -157,17 +157,17 @@ type GetInfoReq struct {
 	AdsStampHeader AdsStampHeader //Array with elements of type AdsStampHeader 翻译: 类型为AdsStampHeader的数组
 }
 
-func (this GetInfoReq) Bytes() g.Bytes {
+func (this GetInfoReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.Length)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.Stamps)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.Length)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.Stamps)).Reverse()...)
 	{
-		data = append(data, g.Bytes(conv.Bytes(this.AdsStampHeader.TimeStamp)).Reverse()...)
-		data = append(data, g.Bytes(conv.Bytes(this.AdsStampHeader.Samples)).Reverse()...)
+		data = append(data, types.Bytes(conv.Bytes(this.AdsStampHeader.TimeStamp)).Reverse()...)
+		data = append(data, types.Bytes(conv.Bytes(this.AdsStampHeader.Samples)).Reverse()...)
 		{
-			data = append(data, g.Bytes(conv.Bytes(this.AdsStampHeader.AdsNotificationSample.NotificationHandle)).Reverse()...)
-			data = append(data, g.Bytes(conv.Bytes(this.AdsStampHeader.AdsNotificationSample.SampleSize)).Reverse()...)
-			data = append(data, g.Bytes(this.AdsStampHeader.AdsNotificationSample.Data).Reverse()...)
+			data = append(data, types.Bytes(conv.Bytes(this.AdsStampHeader.AdsNotificationSample.NotificationHandle)).Reverse()...)
+			data = append(data, types.Bytes(conv.Bytes(this.AdsStampHeader.AdsNotificationSample.SampleSize)).Reverse()...)
+			data = append(data, types.Bytes(this.AdsStampHeader.AdsNotificationSample.Data).Reverse()...)
 		}
 	}
 	return data
@@ -195,14 +195,14 @@ type ReadWriteReq struct {
 	Data []byte //Data to be written in the ADS device 翻译: 需要写入的数据
 }
 
-func (this ReadWriteReq) Bytes() g.Bytes {
+func (this ReadWriteReq) Bytes() types.Bytes {
 	data := []byte(nil)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(this.ReadLength)).Reverse()...)
-	data = append(data, g.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
-	data = append(data, g.Bytes(this.Data).Reverse()...)
-	return g.Bytes(data).Reverse()
+	data = append(data, types.Bytes(conv.Bytes(this.IndexGroup)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.IndexOffset)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(this.ReadLength)).Reverse()...)
+	data = append(data, types.Bytes(conv.Bytes(uint32(len(this.Data)))).Reverse()...)
+	data = append(data, types.Bytes(this.Data).Reverse()...)
+	return types.Bytes(data).Reverse()
 }
 
 type ReadWriteResp struct {

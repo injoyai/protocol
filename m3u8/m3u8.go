@@ -2,7 +2,7 @@ package m3u8
 
 import (
 	"encoding/hex"
-	"github.com/injoyai/base/bytes/crypt/aes"
+	"github.com/injoyai/base/crypt/aes"
 	"github.com/injoyai/goutil/net/http"
 	"github.com/injoyai/goutil/str"
 	"net/url"

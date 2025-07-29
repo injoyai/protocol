@@ -2,8 +2,9 @@ package dnp3
 
 import (
 	"encoding/hex"
-	"github.com/injoyai/io"
-	"github.com/injoyai/io/dial"
+	"github.com/injoyai/ios"
+	"github.com/injoyai/ios/client"
+	"github.com/injoyai/ios/client/redial"
 	"github.com/injoyai/logs"
 	"strings"
 	"testing"
@@ -114,27 +115,26 @@ func TestConfirmPkg(t *testing.T) {
 }
 
 func TestConnect(t *testing.T) {
-	<-dial.RedialTCP("127.0.0.1:20000", func(c *io.Client) {
-		c.Debug()
-		c.SetPrintWithHEX()
+	<-redial.TCP("127.0.0.1:20000", func(c *client.Client) {
+		c.Logger.Debug()
+		c.Logger.WithHEX()
 		//c.SetReadFunc(ReadFunc)
-		c.SetDealFunc(func(msg *io.IMessage) {
-			p, err := Decode(msg.Bytes())
+		c.Event.OnDealMessage = func(c *client.Client, msg ios.Acker) {
+			p, err := Decode(msg.Payload())
 			if err != nil {
 				logs.Err(err)
 				return
 			}
 			switch p.Body.Function {
 			case UnsolicitedMessage:
-				c.Tag().Set("from", p.Header.To)
-				c.Tag().Set("to", p.Header.From)
-				msg.Write(ConfirmPkg(p.Header.To, p.Header.From).Bytes())
+				c.Tag.Set("from", p.Header.To)
+				c.Tag.Set("to", p.Header.From)
+				c.Write(ConfirmPkg(p.Header.To, p.Header.From).Bytes())
 			}
-
-		})
-		c.GoTimerWriter(time.Second*5, func(w *io.IWriter) error {
-			from := c.Tag().GetUint16("from", 3)
-			to := c.Tag().GetUint16("to", 4)
+		}
+		c.GoTimerWriter(time.Second*5, func(w ios.MoreWriter) error {
+			from := c.Tag.GetUint16("from", 3)
+			to := c.Tag.GetUint16("to", 4)
 			if from > 0 && to > 0 {
 				_, err := w.Write(ReadPkg(from, to, []Data{
 					{
@@ -148,5 +148,5 @@ func TestConnect(t *testing.T) {
 			}
 			return nil
 		})
-	}).DoneAll()
+	}).Done()
 }

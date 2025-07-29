@@ -3,7 +3,7 @@ package profibus
 import (
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 )
 
 const (
@@ -21,7 +21,6 @@ Pkg
 https://zhuanlan.zhihu.com/p/643231451
 https://zhuanlan.zhihu.com/p/596431958
 https://blog.csdn.net/fishwang89/article/details/14010439
-
 */
 type Pkg struct {
 	SD       uint8    //帧头
@@ -49,7 +48,7 @@ func (this *Pkg) Suffix(data []byte) []byte {
 	return data
 }
 
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 
 	switch this.SD {
 	case SC:

@@ -3,7 +3,7 @@ package iec104
 import (
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"io"
 	"math"
@@ -27,7 +27,7 @@ https://blog.csdn.net/chenyitao736866376/article/details/99120024
 
 // NewZHTotal 总召唤
 // @slave RTU地址 从站地址
-func NewZHTotal(slave uint16) g.Bytes {
+func NewZHTotal(slave uint16) types.Bytes {
 	return (&APDU{
 		APCI: APCI{},
 		ASDU: ASDU{
@@ -45,7 +45,7 @@ func NewZHTotal(slave uint16) g.Bytes {
 }
 
 // NewRead 读取单个数据
-func NewRead(slave uint16, addr uint32) g.Bytes {
+func NewRead(slave uint16, addr uint32) types.Bytes {
 	return (&APDU{
 		APCI: APCI{},
 		ASDU: ASDU{
@@ -62,7 +62,7 @@ func NewRead(slave uint16, addr uint32) g.Bytes {
 }
 
 // NewSwitchOne 写入单点控制
-func NewSwitchOne(slave uint16, addr uint32, open bool) g.Bytes {
+func NewSwitchOne(slave uint16, addr uint32, open bool) types.Bytes {
 	return (&APDU{
 		APCI: APCI{},
 		ASDU: ASDU{
@@ -72,7 +72,7 @@ func NewSwitchOne(slave uint16, addr uint32, open bool) g.Bytes {
 			Info: []Info{
 				{
 					Addr:  addr,
-					Value: []byte{conv.SelectUint8(open, 1, 0)},
+					Value: []byte{conv.Select[uint8](open, 1, 0)},
 				},
 			},
 		},
@@ -80,7 +80,7 @@ func NewSwitchOne(slave uint16, addr uint32, open bool) g.Bytes {
 }
 
 // NewSwitchTwo 写入双点控制
-func NewSwitchTwo(slave uint16, addr uint32, open bool) g.Bytes {
+func NewSwitchTwo(slave uint16, addr uint32, open bool) types.Bytes {
 	return (&APDU{
 		APCI: APCI{},
 		ASDU: ASDU{
@@ -90,7 +90,7 @@ func NewSwitchTwo(slave uint16, addr uint32, open bool) g.Bytes {
 			Info: []Info{
 				{
 					Addr:  addr,
-					Value: []byte{conv.SelectUint8(open, 2, 1)},
+					Value: []byte{conv.Select[uint8](open, 2, 1)},
 				},
 			},
 		},
@@ -98,37 +98,37 @@ func NewSwitchTwo(slave uint16, addr uint32, open bool) g.Bytes {
 }
 
 // NewSTARTDT_C 启动 U帧
-func NewSTARTDT_C() g.Bytes {
+func NewSTARTDT_C() types.Bytes {
 	return []byte{0x68, 0x04, STARTDT_C, 0x00, 0x00, 0x00}
 }
 
 // NewSTARTDT_A 启动确认 U帧
-func NewSTARTDT_A() g.Bytes {
+func NewSTARTDT_A() types.Bytes {
 	return []byte{0x68, 0x04, STARTDT_A, 0x00, 0x00, 0x00}
 }
 
 // NewSTOP_C 停止 U帧
-func NewSTOP_C() g.Bytes {
+func NewSTOP_C() types.Bytes {
 	return []byte{0x68, 0x04, STOP_C, 0x00, 0x00, 0x00}
 }
 
 // NewSTOP_A 停止确认 U帧
-func NewSTOP_A() g.Bytes {
+func NewSTOP_A() types.Bytes {
 	return []byte{0x68, 0x04, STOP_A, 0x00, 0x00, 0x00}
 }
 
 // NewTESTFR_C 测试 U帧 心跳的作用
-func NewTESTFR_C() g.Bytes {
+func NewTESTFR_C() types.Bytes {
 	return []byte{0x68, 0x04, TESTFR_C, 0x00, 0x00, 0x00}
 }
 
 // NewTESTFR_A 测试确认 U帧
-func NewTESTFR_A() g.Bytes {
+func NewTESTFR_A() types.Bytes {
 	return []byte{0x68, 0x04, TESTFR_A, 0x00, 0x00, 0x00}
 }
 
 // NewAck S格式的确认报文
-func NewAck(msgID uint16) g.Bytes {
+func NewAck(msgID uint16) types.Bytes {
 	return (&APDU{
 		APCI: APCI{
 			Control1: Order_A,
@@ -167,7 +167,7 @@ func (this APCI) ReadNo() uint16 {
 	return uint16(this.Control4) + uint16(this.Control3)
 }
 
-func (this APCI) Bytes(length int) g.Bytes {
+func (this APCI) Bytes(length int) types.Bytes {
 	return []byte{
 		Prefix,           //起始字节
 		byte(length + 4), //数据总长度
@@ -181,9 +181,11 @@ func (this APCI) Bytes(length int) g.Bytes {
 /*
 ASDU
 VSQ 可变结构限定词
+
 	SQ
 	0: 由信息对象地址寻址的单个信息元素或元素集合,每个信息元素分别带有信息体地址
 	1: 单个元素或信息元素同类集合的序列,所有信息共同体用信息体地址,后续信息体地址依次加1
+
 |	D7	|	D6	|	D5	|	D4	|	D3	|	D2	|	D1	|	D0	|
 |	SQ	|		Num(信息对象的数量)
 */
@@ -194,7 +196,7 @@ type ASDU struct {
 	Info   []Info //信息体
 }
 
-func (this ASDU) Bytes() g.Bytes {
+func (this ASDU) Bytes() types.Bytes {
 	data := []byte(nil)
 	data = append(data, byte(this.Type))                         //类型标识,遥信...
 	data = append(data, byte(len(this.Info)))                    //可变结构限定词,信息对象数量
@@ -212,9 +214,9 @@ type Info struct {
 	Value []byte //实时值
 }
 
-func (this Info) Bytes() g.Bytes {
+func (this Info) Bytes() types.Bytes {
 	data := []byte{byte(this.Addr), byte(this.Addr >> 8), byte(this.Addr >> 16)}
-	data = append(data, g.Bytes(this.Value).Reverse()...)
+	data = append(data, types.Bytes(this.Value).Reverse()...)
 	return data
 }
 
@@ -225,7 +227,7 @@ type APDU struct {
 	ASDU
 }
 
-func (this *APDU) Bytes() g.Bytes {
+func (this *APDU) Bytes() types.Bytes {
 	asdu := this.ASDU.Bytes()
 	data := this.APCI.Bytes(len(asdu)) //APCI,控制信息
 	data = append(data, asdu...)       //数据域ASDU
@@ -249,7 +251,7 @@ func Handshake(r io.ReadWriter) error {
 		return err
 	}
 	want := NewSTARTDT_A().HEX()
-	obtain := g.Bytes(buf).HEX()
+	obtain := types.Bytes(buf).HEX()
 	if obtain != want {
 		return fmt.Errorf("握手错误,预期(%s),得到(%s)", want, obtain)
 	}
@@ -302,7 +304,7 @@ func Decode(bs []byte) (a Response, err error) {
 		}
 
 		func() {
-			defer g.Recover(nil)
+			//defer g.Recover(nil)
 			val := &Value{Addr: addr}
 			switch a.Type {
 			case M_ME_NA_1:
@@ -323,7 +325,7 @@ func Decode(bs []byte) (a Response, err error) {
 				bs = bs[1:]
 			case M_IT_TB_1, M_IT_TB_1_:
 				//带7个字节长时标的电度量，每个电度量占12个字节
-				val.Value = math.Float32frombits(conv.Uint32(g.Bytes(bs[:5]).Reverse().Bytes()))
+				val.Value = math.Float32frombits(conv.Uint32(types.Bytes(bs[:5]).Reverse().Bytes()))
 				val.SetTime(bs[5:12])
 				bs = bs[12:]
 			}
@@ -397,7 +399,7 @@ type Value struct {
 	Time  time.Time   //时间
 }
 
-func (this *Value) SetTime(bs g.Bytes) {
+func (this *Value) SetTime(bs types.Bytes) {
 	switch bs.Len() {
 	case 7:
 		mill := int(bs[1])<<8 + int(bs[0])

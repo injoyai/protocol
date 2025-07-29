@@ -2,8 +2,9 @@ package iec104
 
 import (
 	"encoding/hex"
-	"github.com/injoyai/io"
-	"github.com/injoyai/io/dial"
+	"github.com/injoyai/ios"
+	"github.com/injoyai/ios/client"
+	"github.com/injoyai/ios/client/redial"
 	"github.com/injoyai/logs"
 	io2 "io"
 	"strings"
@@ -30,12 +31,13 @@ func TestHandshake(t *testing.T) {
 
 	}).Do
 
-	<-dial.RedialTCP(":2404", func(c *io.Client) {
+	<-redial.TCP(":2404", func(c *client.Client) {
 		//握手
 		c.CloseWithErr(Handshake(c))
-		c.Debug()
-		c.SetPrintWithHEX()
-		c.SetReadFunc(ReadFunc)
+		c.Logger.Debug()
+		c.Logger.WithHEX()
+		c.OnReadFrom = ReadFrom
+		//c.SetReadFunc(ReadFunc)
 
 		//totalDone := make(chan struct{}, 1)
 
@@ -46,10 +48,15 @@ func TestHandshake(t *testing.T) {
 		//	}
 		//}()
 
-		c.SetDealFunc(func(msg *io.IMessage) {
-			c.CloseWithErr(handler(msg.Client, msg.Bytes()))
-		})
-	}).DoneAll()
+		c.OnDealMessage = func(c *client.Client, msg ios.Acker) {
+			c.CloseWithErr(handler(c, msg.Payload()))
+		}
+
+		//c.SetDealFunc(func(c *io.Client, msg io.Message) {
+		//	c.CloseWithErr(handler(c, msg.Bytes()))
+		//})
+
+	}).Done()
 }
 
 func TestDecode(t *testing.T) {

@@ -1,6 +1,6 @@
 package bacnet
 
-import "github.com/injoyai/base/g"
+import "github.com/injoyai/base/types"
 
 type Object struct {
 	Tag   Tag
@@ -8,7 +8,7 @@ type Object struct {
 	Data  []byte
 }
 
-func (this Object) Bytes() g.Bytes {
+func (this Object) Bytes() types.Bytes {
 	return nil
 }
 

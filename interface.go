@@ -2,11 +2,11 @@ package protocol
 
 import (
 	"bufio"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 )
 
 type Interface interface {
-	Bytes() g.Bytes
+	Bytes() types.Bytes
 }
 
 type (

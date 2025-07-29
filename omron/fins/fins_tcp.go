@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"io"
 )
@@ -63,7 +63,7 @@ type TCPFrame struct {
 	Frame     *Frame
 }
 
-func (this TCPFrame) Bytes() g.Bytes {
+func (this TCPFrame) Bytes() types.Bytes {
 	data := []byte(Prefix)
 	var frameBytes []byte
 	if this.Frame != nil {
@@ -142,7 +142,7 @@ func ShakeHand(c io.ReadWriter) (*TCPNode, error) {
 }
 
 // TCPShakeHandRequest 建立连接之后,需要进行握手操作
-func TCPShakeHandRequest() g.Bytes {
+func TCPShakeHandRequest() types.Bytes {
 	data := []byte(Prefix)
 	data = append(data, 0, 0, 0, 0x0c)
 	data = append(data, 0, 0, 0, 0)
@@ -156,7 +156,7 @@ TCPMemoryRead 地址需要注意,最后一字节是位
 发送: 0101 82 006400 000A
 返回: 010100000102030405060708090A
 */
-func TCPMemoryRead(area Area, addr uint32, length uint16, node *TCPNode) g.Bytes {
+func TCPMemoryRead(area Area, addr uint32, length uint16, node *TCPNode) types.Bytes {
 	return TCPFrame{
 		Command: CommandData,
 		Frame: &Frame{
@@ -174,7 +174,7 @@ func TCPMemoryRead(area Area, addr uint32, length uint16, node *TCPNode) g.Bytes
 }
 
 // TCPMemoryWrite 内存写入
-func TCPMemoryWrite(area Area, addr uint32, value []byte, node *TCPNode) g.Bytes {
+func TCPMemoryWrite(area Area, addr uint32, value []byte, node *TCPNode) types.Bytes {
 	return TCPFrame{
 		Command: CommandData,
 		Frame: &Frame{
@@ -191,7 +191,7 @@ func TCPMemoryWrite(area Area, addr uint32, value []byte, node *TCPNode) g.Bytes
 	}.Bytes()
 }
 
-func Decode(bs g.Bytes) (*TCPFrameResp, error) {
+func Decode(bs types.Bytes) (*TCPFrameResp, error) {
 
 	//判断基础长度
 	if bs.Len() < 24 {

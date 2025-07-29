@@ -24,10 +24,10 @@ func GetString(bytes []byte) string {
 }
 
 func GetBool(bytes []byte, idxs ...uint8) bool {
-	idx := conv.GetDefaultUint8(0, idxs...)
-	idx = conv.SelectUint8(idx <= 7, idx, 7)
+	idx := conv.Default(0, idxs...)
+	idx = conv.Select(idx <= 7, idx, 7)
 	if len(bytes) > 0 {
-		return conv.BIN(bytes[0])[7-idx]
+		return conv.BINBool(bytes[0])[7-idx]
 	}
 	return false
 }

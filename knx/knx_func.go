@@ -39,7 +39,7 @@ func Register(clientAddress, gatewayAddress string, r io.ReadWriter) (uint8, err
 	}
 
 	//读取响应数据
-	readBytes, err := ReadFunc(bufio.NewReader(r))
+	readBytes, err := ReadFrom(bufio.NewReader(r))
 	if err != nil {
 		return 0, err
 	}

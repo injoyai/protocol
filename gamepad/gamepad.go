@@ -186,6 +186,6 @@ func (this Direction) Right() bool {
 // Clock 时钟方向,1~12 1.5,3,4.5,6,7.5,9,10.5,12
 func (this Direction) Clock() float64 {
 	n := float64(this/4-1) * 1.5
-	n = conv.SelectFloat64(n == 0, 12, n)
+	n = conv.Select(n == 0, 12, n)
 	return n
 }

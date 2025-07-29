@@ -2,14 +2,14 @@ package iec104
 
 import (
 	"bufio"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"io"
 )
 
 type Handler func(writer io.Writer, a Response) error
 
 // Do 处理服务端过来的数据
-func (this Handler) Do(writer io.Writer, bytes g.Bytes) error {
+func (this Handler) Do(writer io.Writer, bytes types.Bytes) error {
 	a, err := Decode(bytes)
 	if err != nil {
 		return err
@@ -57,6 +57,34 @@ func ReadFunc(r *bufio.Reader) (bytes []byte, err error) {
 		}
 		if prefix == Prefix {
 			length, err := r.ReadByte()
+			if err != nil {
+				return nil, err
+			}
+			bytes = make([]byte, int(length)+2)
+			_, err = io.ReadAtLeast(r, bytes[2:], int(length))
+			bytes[0] = Prefix
+			bytes[1] = length
+			return bytes, err
+		}
+	}
+}
+
+func ReadFrom(r io.Reader) (bytes []byte, err error) {
+	b := make([]byte, 1)
+	readByte := func(r io.Reader) (byte, error) {
+		_, err = r.Read(b)
+		if err != nil {
+			return 0, err
+		}
+		return b[0], nil
+	}
+	for {
+		prefix, err := readByte(r)
+		if err != nil {
+			return nil, err
+		}
+		if prefix == Prefix {
+			length, err := readByte(r)
 			if err != nil {
 				return nil, err
 			}

@@ -5,8 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/injoyai/base/bytes"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 )
 
 /*
@@ -69,11 +68,11 @@ var (
 )
 
 type Pkg struct {
-	Addr  uint32       //地址3字节(软元件起始)
-	Block Block        //数据块(软元件)
-	Order Order        //指令 读,写...
-	Point uint16       //点数,1点数等于2字节
-	Data  bytes.Entity //写入的数据
+	Addr  uint32      //地址3字节(软元件起始)
+	Block Block       //数据块(软元件)
+	Order Order       //指令 读,写...
+	Point uint16      //点数,1点数等于2字节
+	Data  types.Bytes //写入的数据
 }
 
 func (this *Pkg) Len() int {
@@ -100,7 +99,7 @@ Bytes
 读取软元件D7000开始的连续5个软元件的值，其中0C是上一次写入的数
 50 00 00 FF FF 03 00 0C 00 10 00 01 04 00 00 58 1B 00 A8 05 00
 */
-func (this *Pkg) Bytes() g.Bytes {
+func (this *Pkg) Bytes() types.Bytes {
 	data := []byte(nil)
 	data = append(data, pkgReqStart...)         //帧头
 	data = append(data, 0x00)                   //网络编号

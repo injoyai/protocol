@@ -1,11 +1,10 @@
 package knx
 
 import (
-	"bufio"
 	"fmt"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
-	"github.com/injoyai/io/buf"
+	"github.com/injoyai/ios"
 	"io"
 	"net"
 )
@@ -57,7 +56,7 @@ type Frame struct {
 	HAPIs []HAPI
 }
 
-func (this Frame) Bytes() g.Bytes {
+func (this Frame) Bytes() types.Bytes {
 	data := []byte(nil)
 	length := uint16(6) //头部数据长度
 	for _, h := range this.HAPIs {
@@ -109,15 +108,15 @@ func NewHAPI(Type uint8, data []byte) HAPI {
 }
 
 /*
-	NewHAPIAddress
-	网络地址 8字节 HAPI ip + port
-	这两个部分的都是HAPI格式的，HAPI专门用于描述主机的信息，便于连接双方互相了解对方的一些关键信息。
-	HAPI格式8个字节的含义如下:
+NewHAPIAddress
+网络地址 8字节 HAPI ip + port
+这两个部分的都是HAPI格式的，HAPI专门用于描述主机的信息，便于连接双方互相了解对方的一些关键信息。
+HAPI格式8个字节的含义如下:
 
-	Byte0: HAPI数据的长度，固定为0x08
-	Byte1: 使用的通讯协议, 目前为0x01，表示UDP
-	Byte2-5: ip地址，4个字节
-	Byte6-7: 端口号，2个字节
+Byte0: HAPI数据的长度，固定为0x08
+Byte1: 使用的通讯协议, 目前为0x01，表示UDP
+Byte2-5: ip地址，4个字节
+Byte6-7: 端口号，2个字节
 */
 func NewHAPIAddress(proto Protocol, ip net.IP, port uint16) HAPI {
 	return NewHAPI(uint8(proto), append(ip.To4(), byte(port>>8), byte(port)))
@@ -168,10 +167,37 @@ func Decode(bs []byte) (*Frame, error) {
 	return f, nil
 }
 
-func ReadFunc(r *bufio.Reader) ([]byte, error) {
+//func ReadFunc(r *bufio.Reader) ([]byte, error) {
+//	for {
+//		result := []byte(nil)
+//		if _, err := buf.ReadPrefix(r, conv.Bytes(Prefix)); err != nil {
+//			return nil, err
+//		}
+//		result = append(result, conv.Bytes(Prefix)...)
+//
+//		buf := make([]byte, 4)
+//		if _, err := io.ReadAtLeast(r, buf, 4); err != nil {
+//			return nil, err
+//		}
+//		result = append(result, buf...)
+//
+//		length := conv.Int(buf[2:])
+//		if length >= 22 {
+//			length -= 6
+//			buf = make([]byte, length)
+//			if _, err := io.ReadAtLeast(r, buf, length); err != nil {
+//				return nil, err
+//			}
+//			result = append(result, buf...)
+//			return result, nil
+//		}
+//	}
+//}
+
+func ReadFrom(r io.Reader) ([]byte, error) {
 	for {
 		result := []byte(nil)
-		if _, err := buf.ReadPrefix(r, conv.Bytes(Prefix)); err != nil {
+		if _, err := ios.ReadPrefix(r, conv.Bytes(Prefix)); err != nil {
 			return nil, err
 		}
 		result = append(result, conv.Bytes(Prefix)...)

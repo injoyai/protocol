@@ -3,7 +3,7 @@ package s7
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/injoyai/base/g"
+	"github.com/injoyai/base/types"
 	"github.com/injoyai/conv"
 	"strconv"
 )
@@ -90,7 +90,7 @@ type Request struct {
 	Write Write  //写入数据
 }
 
-func (this *Request) Encode() g.Bytes {
+func (this *Request) Encode() types.Bytes {
 	return this.Bytes()
 }
 
@@ -105,7 +105,7 @@ func (this *Request) len() int {
 
 // Bytes
 // 03 00 00 16 11 E0 00 00 00 01 00 C1 02 10 00 C2 02 03 00 C0 01 0A
-func (this *Request) Bytes() g.Bytes {
+func (this *Request) Bytes() types.Bytes {
 	data := []byte{0x03, 0x00}                                          //报文头,2字节
 	data = append(data, conv.Bytes(uint16(this.len()))...)              //报文长度2字节
 	data = append(data, []byte{0x02, 0xF0, 0x80}...)                    //固定协议标识,3字节
